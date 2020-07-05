@@ -2,11 +2,15 @@ package main
 
 import (
 	"fmt"
+	"github.com/fsnotify/fsnotify"
 	"log"
 	"os"
 	"os/exec"
 	"runtime"
+	"strings"
 )
+
+var watcher *fsnotify.Watcher
 
 // CLI entrypoint
 func main() {
@@ -47,4 +51,20 @@ var clearScreen = func() {
 	default:
 		fmt.Println("Platform unsupported! Could not clear the screen")
 	}
+}
+
+// watchDir gets run as a walk func, searching for directories to add watchers
+func watchDir(path string, fi os.FileInfo, err error) error {
+	// ignore node_modules/ and .git/ because they cause the watchers to trigger
+	if strings.Contains(path, "node_modules") || strings.Contains(path, ".git") {
+		return nil
+	}
+
+	// since fsnotify can watch all the files in a directory, watchers only need
+	// to be added to each nested directory
+	if fi.Mode().IsDir() {
+		return watcher.Add(path)
+	}
+
+	return nil
 }
