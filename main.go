@@ -24,11 +24,9 @@ func main() {
 	return
 }
 
-/*
-	Attempt to clear the terminal screen depending on the OS. Print a warning
-	message if the system is not supported
-	NOTE: only tested on macOS
-*/
+//Attempt to clear the terminal screen depending on the OS. Print a warning
+//message if the system is not supported
+//NOTE: only tested on macOS
 var clearScreen = func() {
 	switch system := runtime.GOOS; system {
 	case "darwin":
