@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"time"
 )
 
 var watcher *fsnotify.Watcher
@@ -132,4 +133,14 @@ func monitor(cmd *exec.Cmd, commandInput []string, done chan bool) error {
 			return nil
 		}
 	}
+}
+
+// After an event is triggered, have a waiting period before
+// another event can be triggered. Its common for a file save
+// to trigger multiple events so creating a short artificial
+// delay between triggers makes the program feel smoother
+func pauseMonitoring(readyForCommand *bool) {
+	*readyForCommand = false
+	time.Sleep(2 * time.Second)
+	*readyForCommand = true
 }
