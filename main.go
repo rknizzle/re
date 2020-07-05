@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"github.com/fsnotify/fsnotify"
 	"log"
@@ -23,6 +24,35 @@ func main() {
 		log.Fatalf(err.Error())
 	}
 	return
+}
+
+func run(commandInput []string, done chan bool) error {
+	// check for no command input
+	if len(commandInput) == 0 {
+		return errors.New("No arguments supplied")
+	}
+
+	// run the input command initially
+	clearScreen()
+	cmd := initializeCmd(commandInput)
+	err := cmd.Start()
+	if err != nil {
+		return err
+	}
+
+	// start watching for file changes
+	watcher, err = deployWatchers()
+	if err != nil {
+		return err
+	}
+	defer watcher.Close()
+
+	// refresh the command any time a file is changed
+	err = monitor(cmd, commandInput, done)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 //Attempt to clear the terminal screen depending on the OS. Print a warning
