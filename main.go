@@ -98,3 +98,38 @@ var initializeCmd = func(commandInput []string) *exec.Cmd {
 	cmd.Stderr = os.Stderr
 	return cmd
 }
+
+// reruns the command when a file change is detected
+func monitor(cmd *exec.Cmd, commandInput []string, done chan bool) error {
+	var readyForCommand = true
+	// watch for events to refresh the command
+	for {
+		select {
+		// watch for events
+		case _ = <-watcher.Events:
+			if readyForCommand {
+				// kill the previous commands process before restarting
+				err := cmd.Process.Kill()
+				if err != nil {
+					return err
+				}
+
+				// run the command
+				clearScreen()
+				cmd = initializeCmd(commandInput)
+				err = cmd.Start()
+				if err != nil {
+					return err
+				}
+			}
+
+		// watch for errors
+		case err := <-watcher.Errors:
+			return err
+
+		// exit when 'done'
+		case _ = <-done:
+			return nil
+		}
+	}
+}
