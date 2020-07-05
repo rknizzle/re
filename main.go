@@ -89,3 +89,12 @@ func watchDir(path string, fi os.FileInfo, err error) error {
 
 	return nil
 }
+
+// convert the command input -> an executable command (exec.Command) that
+// will output its stdout and stderr to the console
+var initializeCmd = func(commandInput []string) *exec.Cmd {
+	cmd := exec.Command(commandInput[0], commandInput[1:]...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	return cmd
+}
