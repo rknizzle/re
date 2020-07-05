@@ -89,3 +89,45 @@ func TestEventTriggersCommandToReRun(t *testing.T) {
 		t.Errorf("Command should run twice but it ran %d times", runCount)
 	}
 }
+
+func TestTwoEventTriggersCommandToReRunTwice(t *testing.T) {
+	clearScreen = func() {}
+	var runCount int = 0
+	before := initializeCmd
+
+	// replace the intializeCmd fxn with a fxn that increments a called counter
+	// so that the test can verify if initializeCmd was called
+	initializeCmd = func([]string) *exec.Cmd {
+		runCount++
+		cmd := exec.Command("echo", "")
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		return cmd
+	}
+
+	// un-mock initializeCmd after the test
+	defer func() {
+		initializeCmd = before
+	}()
+
+	done := make(chan bool)
+	// start the run function
+	go run([]string{"blank", "echo", ""}, done)
+
+	// QUICKFIX: for some reason this test hangs if this sleep isnt here. Im
+	// guessing it is because I need to wait for the deployWatchers function to
+	// finish before any watcher events can be triggered
+	time.Sleep(500 * time.Millisecond)
+	// send a watcher event as a way to mock a file change
+	watcher.Events <- fsnotify.Event{}
+	// wait for pause in monitoring
+	time.Sleep(2100 * time.Millisecond)
+	// trigger another file change event
+	watcher.Events <- fsnotify.Event{}
+
+	done <- true
+	// verify that the command ran 3 times
+	if runCount != 3 {
+		t.Errorf("Command should run 3 times but it ran %d times", runCount)
+	}
+}
