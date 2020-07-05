@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"runtime"
 	"strings"
 )
@@ -51,6 +52,28 @@ var clearScreen = func() {
 	default:
 		fmt.Println("Platform unsupported! Could not clear the screen")
 	}
+}
+
+// recursively add watchers to directories to capture file change events
+func deployWatchers() (*fsnotify.Watcher, error) {
+	path, err := os.Getwd()
+	if err != nil {
+		return nil, err
+	}
+
+	// creates a new file watcher which watches all files for changes in the
+	// directory that it is placed in
+	watcher, err = fsnotify.NewWatcher()
+	if err != nil {
+		return nil, err
+	}
+
+	// starting at the root of the project, walk each file/directory searching
+	// for directories to add a watcher to
+	if err := filepath.Walk(path, watchDir); err != nil {
+		return nil, err
+	}
+	return watcher, nil
 }
 
 // watchDir gets run as a walk func, searching for directories to add watchers
