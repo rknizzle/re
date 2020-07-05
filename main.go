@@ -109,6 +109,7 @@ func monitor(cmd *exec.Cmd, commandInput []string, done chan bool) error {
 		// watch for events
 		case _ = <-watcher.Events:
 			if readyForCommand {
+				go pauseMonitoring(&readyForCommand)
 				// kill the previous commands process before restarting
 				err := cmd.Process.Kill()
 				if err != nil {
