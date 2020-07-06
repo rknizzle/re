@@ -1,8 +1,8 @@
 # re
 
-Continously run a command that will refresh when a file change is detected in directory or subdirectory
+Continously run a command that will refresh when a file change is detected in the directory or a subdirectory
 
-Example usage:  
+Example usages:  
 ```
 re go test  
 re node server.js  
