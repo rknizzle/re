@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"github.com/fsnotify/fsnotify"
 	"log"
 	"os"
 	"os/exec"
@@ -11,6 +10,8 @@ import (
 	"runtime"
 	"strings"
 	"time"
+
+	"github.com/fsnotify/fsnotify"
 )
 
 var watcher *fsnotify.Watcher
