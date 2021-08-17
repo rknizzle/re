@@ -137,7 +137,11 @@ func monitor(cmd *exec.Cmd, commandInput []string, done chan bool) error {
 	for {
 		select {
 		// watch for events
-		case _ = <-watcher.Events:
+		case event := <-watcher.Events:
+			if !(event.Op&fsnotify.Write == fsnotify.Write) {
+				break
+			}
+
 			if readyForCommand {
 				go pauseMonitoring(&readyForCommand)
 				// kill the previous commands process before restarting
